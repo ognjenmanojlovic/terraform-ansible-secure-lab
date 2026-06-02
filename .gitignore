@@ -1,0 +1,9 @@
+.env
+*.retry
+
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+
+.vscode/
+.DS_Store

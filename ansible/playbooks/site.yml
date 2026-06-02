@@ -1,0 +1,10 @@
+- name: Configure secure Gitea server
+  hosts: gitea
+  become: true
+
+  roles:
+    - common
+    - docker
+    - security
+    - ssh_hardening
+    - gitea
