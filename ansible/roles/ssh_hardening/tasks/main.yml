@@ -1,0 +1,33 @@
+- name: Create SSH hardening configuration
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/99-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      ChallengeResponseAuthentication no
+      PubkeyAuthentication yes
+      PermitEmptyPasswords no
+      UsePAM yes
+
+- name: Disable password authentication in existing SSH config files
+  ansible.builtin.replace:
+    path: "{{ item }}"
+    regexp: '^PasswordAuthentication yes'
+    replace: 'PasswordAuthentication no'
+  loop:
+    - /etc/ssh/sshd_config
+    - /etc/ssh/sshd_config.d/50-cloud-init.conf
+  ignore_errors: true
+
+- name: Validate SSH configuration
+  ansible.builtin.command: sshd -t
+  changed_when: false
+
+- name: Restart SSH service
+  ansible.builtin.systemd:
+    name: ssh
+    state: restarted
