@@ -1,0 +1,21 @@
+- name: Create Gitea directory
+  ansible.builtin.file:
+    path: /opt/gitea
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy Gitea Docker Compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: /opt/gitea/docker-compose.yml
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Start Gitea container
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/gitea
+  changed_when: true
