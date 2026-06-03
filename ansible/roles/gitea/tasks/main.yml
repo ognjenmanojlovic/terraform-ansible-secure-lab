@@ -19,3 +19,4 @@
     cmd: docker compose up -d
     chdir: /opt/gitea
   changed_when: true
+  
