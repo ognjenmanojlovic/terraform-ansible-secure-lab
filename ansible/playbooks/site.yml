@@ -1,3 +1,4 @@
+---
 - name: Configure secure Gitea server
   hosts: gitea
   become: true
@@ -8,4 +9,3 @@
     - security
     - ssh_hardening
     - gitea
-    

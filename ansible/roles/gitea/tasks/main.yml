@@ -1,3 +1,4 @@
+---
 - name: Create Gitea directory
   ansible.builtin.file:
     path: /opt/gitea
@@ -19,4 +20,3 @@
     cmd: docker compose up -d
     chdir: /opt/gitea
   changed_when: true
-  
