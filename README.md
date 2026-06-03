@@ -1,53 +1,77 @@
 # Terraform & Ansible Secure Gitea Lab
 
-## Overview
+<p align="center">
+  <img src="./docs/screenshots/terraform-ansible-logo.png" alt="Terraform & Ansible Gitea Lab" width="100%">
+</p>
 
-This project demonstrates how to automate the deployment and hardening of a self-hosted Git service using **Terraform**, **Ansible**, **Docker**, and **Linux security best practices**.
+> Infrastructure as Code and Configuration Management project focused on automated Linux server provisioning, Docker deployment, and SSH hardening inside a local virtualization lab.
 
-The main goal of this project was to gain practical experience with:
+---
 
-- Infrastructure as Code (IaC)
-- Configuration Management
-- Linux Server Automation
-- Dockerized Deployments
-- SSH Hardening
-- Firewall Management
-- Secure Remote Administration
+# Table of Contents
 
-The environment was built inside a local lab using:
+- [Overview](#overview)
+- [Project Goals](#project-goals)
+- [Why Terraform?](#why-terraform)
+- [Why Ansible?](#why-ansible)
+- [Lab Architecture](#lab-architecture)
+- [Technologies Used](#technologies-used)
+- [Project Structure](#project-structure)
+- [Environment Setup](#environment-setup)
+- [VirtualBox Networking](#virtualbox-networking)
+- [SSH Configuration](#ssh-configuration)
+- [Ansible Inventory](#ansible-inventory)
+- [Ansible Roles](#ansible-roles)
+- [Dockerized Gitea Deployment](#dockerized-gitea-deployment)
+- [GitHub Actions CI Validation](#github-actions-ci-validation)
+- [Security Features](#security-features)
+- [Screenshots](#screenshots)
+- [Learning Outcomes](#learning-outcomes)
+- [Conclusion](#conclusion)
 
-- macOS (Control Node)
-- Ubuntu Server VM on VirtualBox (Managed Host)
+---
+
+# Overview
+
+This project demonstrates how to automate the deployment and hardening of a Linux-based Git server using Terraform, Ansible, Docker, Gitea, GitHub Actions, and Linux security best practices.
+
+The environment was built inside a local virtualization lab using a macOS control node and an Ubuntu Server VM running in VirtualBox.
+
+Instead of configuring the server manually, the entire environment can now be recreated automatically using Infrastructure as Code and Configuration Management principles.
 
 ---
 
 # Project Goals
 
-The objective of this project was to automate the provisioning and configuration of a secure Linux server environment instead of configuring everything manually.
+The primary objective of this project was to gain hands-on experience with:
 
-The project includes:
-
-- Automated Docker installation
-- Automated Gitea deployment
-- Automated firewall configuration
-- Automated Fail2Ban installation
+- Infrastructure as Code (IaC)
+- Linux server automation
+- Dockerized deployments
+- Configuration management
+- Secure remote administration
 - SSH hardening
-- Infrastructure validation using GitHub Actions
+- Firewall management
+- CI validation workflows
+
+The project focuses on reproducibility, automation, and security.
 
 ---
 
 # Why Terraform?
 
-Terraform is an Infrastructure as Code (IaC) tool used to define infrastructure in a reproducible way.
+Terraform is an Infrastructure as Code (IaC) tool developed by HashiCorp.
+
+Terraform allows infrastructure to be defined declaratively instead of being configured manually.
 
 In this project, Terraform was used to:
 
 - Learn Infrastructure as Code concepts
 - Create a structured infrastructure workflow
 - Validate Terraform configurations
-- Simulate infrastructure provisioning inside a local lab
+- Understand reproducible infrastructure deployments
 
-Although the infrastructure was deployed locally inside a VM environment, the same Terraform concepts can later be applied to cloud platforms.
+Although this project runs locally inside a VM environment, the same concepts can later be applied to cloud platforms such as AWS, Azure, DigitalOcean, Hetzner, or Google Cloud Platform.
 
 ---
 
@@ -55,22 +79,23 @@ Although the infrastructure was deployed locally inside a VM environment, the sa
 
 Ansible is a configuration management and automation tool.
 
-Instead of manually typing commands on the server, Ansible automates the entire server setup process.
+Instead of manually typing Linux commands on the server, Ansible automates the entire setup process.
 
 This project uses Ansible to automate:
 
-- Linux package installation
+- Package installation
 - Docker installation
 - Firewall configuration
 - Fail2Ban installation
 - Gitea deployment
 - SSH hardening
+- Service management
 
-This allows the server to be recreated quickly and consistently.
+If the server fails, the complete environment can be recreated automatically using a single playbook.
 
 ---
 
-# Architecture
+# Lab Architecture
 
 ```text
 MacBook (Control Node)
@@ -78,9 +103,10 @@ MacBook (Control Node)
 ├── Terraform
 ├── Ansible
 ├── VS Code
-├── SSH
-└── GitHub
+├── GitHub
+└── SSH
 
+            │
             │ SSH
             ▼
 
@@ -105,7 +131,11 @@ Ubuntu Server VM (Managed Host)
 
 ## Operating System
 
-- Ubuntu Server
+- Ubuntu Server 24.04 LTS
+
+## Virtualization
+
+- VirtualBox
 
 ## Containerization
 
@@ -162,33 +192,34 @@ terraform-ansible-secure-infra/
 
 # Environment Setup
 
-## VirtualBox Networking
+The project environment consists of:
+
+| System | Purpose |
+|---|---|
+| macOS | Control Node |
+| Ubuntu Server VM | Managed Host |
+| VirtualBox | Virtualization |
+| SSH | Remote Management |
+
+The macOS machine acts as the Ansible control node while the Ubuntu VM acts as the managed target system.
+
+---
+
+# VirtualBox Networking
 
 The Ubuntu VM was configured using:
 
 - NAT Networking
 - Port Forwarding
 
-Forwarded Ports:
+Forwarded ports:
 
 | Service | Host Port | Guest Port |
 |---|---|---|
 | SSH | 2222 | 22 |
 | Gitea Web UI | 3000 | 3000 |
 
-Alternatively, the VM can also be configured using:
-
-- Bridged Adapter
-
-which would allow direct access to the VM using its own IP address.
-
----
-
-# SSH Access
-
-SSH access was configured between the macOS control node and the Ubuntu VM.
-
-## SSH Connection Example
+Example SSH connection:
 
 ```bash
 ssh user@192.168.x.x -p 2222
@@ -196,9 +227,21 @@ ssh user@192.168.x.x -p 2222
 
 ---
 
-# Ansible Inventory
+# SSH Configuration
 
-The inventory defines which server Ansible should manage.
+SSH was configured between the macOS control node and the Ubuntu VM.
+
+The project uses:
+
+- SSH key authentication
+- Disabled password authentication
+- Disabled root login
+
+This significantly improves remote access security.
+
+---
+
+# Ansible Inventory
 
 Example:
 
@@ -207,33 +250,44 @@ Example:
 ubuntu-vm ansible_host=192.168.x.x ansible_port=2222 ansible_user=user
 ```
 
+The inventory defines:
+
+- Target host
+- SSH port
+- SSH user
+- Host grouping
+
 ---
 
 # Ansible Roles
 
 ## Common Role
 
-Installs common Linux packages such as:
+Installs general Linux packages and updates the operating system.
+
+Installed packages include:
 
 - curl
-- git
 - wget
+- git
 - unzip
+- ca-certificates
+- gnupg
 
 ---
 
 ## Docker Role
 
-Installs and configures:
+Automates Docker installation and configuration.
 
-- Docker Engine
-- Docker Compose
+Tasks performed:
 
-The Docker role also:
-
-- Enables the Docker service
+- Removes conflicting packages
+- Adds official Docker repository
+- Installs Docker Engine
+- Installs Docker Compose
 - Starts Docker automatically
-- Adds the user to the Docker group
+- Adds user to Docker group
 
 ---
 
@@ -243,7 +297,7 @@ Configures:
 
 - UFW Firewall
 - Fail2Ban
-- Firewall rules
+- Firewall Rules
 
 Allowed ports:
 
@@ -252,7 +306,7 @@ Allowed ports:
 | 22 | SSH |
 | 3000 | Gitea Web Interface |
 
-Default firewall policy:
+Default policy:
 
 ```text
 deny incoming
@@ -262,16 +316,14 @@ deny incoming
 
 ## SSH Hardening Role
 
-The SSH hardening role improves remote access security.
+Improves remote access security by:
 
-Implemented hardening measures:
+- Disabling root login
+- Disabling password authentication
+- Enabling SSH key authentication
+- Disabling empty passwords
 
-- Disabled root login
-- Disabled password authentication
-- Enabled SSH key authentication
-- Disabled empty passwords
-
-This project also demonstrates troubleshooting modern Ubuntu SSH configurations using:
+The project also demonstrates troubleshooting Ubuntu SSH configurations using:
 
 ```text
 /etc/ssh/sshd_config.d/
@@ -281,38 +333,49 @@ This project also demonstrates troubleshooting modern Ubuntu SSH configurations 
 
 ## Gitea Role
 
-The Gitea role:
+Automates the deployment of a self-hosted Git service.
 
-- Creates the deployment directory
-- Deploys the Docker Compose configuration
+Tasks performed:
+
+- Creates deployment directories
+- Deploys Docker Compose configuration
+- Configures environment variables
 - Starts the Gitea container automatically
 
 ---
 
 # Dockerized Gitea Deployment
 
-Gitea runs inside a Docker container.
+Gitea was deployed using Docker Compose.
 
 The deployment includes:
 
-- Persistent Docker volume storage
-- Custom environment variables
-- Automatic container restart
+- Persistent Docker volumes
+- Environment variables
+- Automatic restart policies
+- Containerized isolation
 
 ---
 
-# GitHub Actions
+# GitHub Actions CI Validation
 
 GitHub Actions were added to validate the infrastructure code automatically.
 
-The workflow validates:
+Validated components:
 
 - Terraform formatting
 - Terraform configuration
 - Ansible syntax
 - YAML formatting
 
-This simulates a lightweight CI pipeline commonly used in DevSecOps workflows.
+Example validation commands:
+
+```bash
+terraform fmt -check -recursive
+terraform validate
+ansible-playbook --syntax-check
+yamllint .
+```
 
 ---
 
@@ -364,24 +427,30 @@ This project includes several security-focused components:
 
 # Learning Outcomes
 
-This project provided hands-on experience with:
+This project provided practical experience with:
 
 - Infrastructure as Code
 - Linux Administration
 - Docker Automation
 - Secure Remote Access
 - Configuration Management
+- CI Validation Workflows
 - Infrastructure Validation
-- DevSecOps Workflows
-- Troubleshooting Linux Services
-- Troubleshooting SSH Configurations
+- DevSecOps Concepts
+- SSH Troubleshooting
+- Linux Service Troubleshooting
 
 ---
 
 # Conclusion
 
-This project demonstrates how modern infrastructure and server configuration can be automated using Infrastructure as Code and Configuration Management tools.
+This project demonstrates how modern Linux infrastructure can be automated using Infrastructure as Code and Configuration Management tools.
 
-Instead of manually configuring servers, the entire environment can now be recreated consistently and securely using Ansible and Terraform.
+Instead of manually configuring systems, the entire environment can now be recreated consistently and securely using:
 
-The project also demonstrates practical Linux hardening and DevSecOps concepts in a realistic local lab environment.
+- Terraform
+- Ansible
+- Docker
+- GitHub Actions
+
+The project also demonstrates practical Linux hardening, automation workflows, and DevSecOps concepts inside a realistic local lab environment.
